@@ -1,0 +1,186 @@
+/* AquaChain console — restrained, professional.
+   Accent (deep teal) appears only on primary actions, the active tab,
+   and the brand mark. Everything else stays neutral. */
+
+:root {
+  --accent: #0f766e;        /* deep teal */
+  --accent-hover: #0d5f59;
+  --accent-soft: #e6f2f1;
+  --bg: #f7f7f6;
+  --surface: #ffffff;
+  --border: #e3e3e0;
+  --text: #1f2937;
+  --text-dim: #6b7280;
+  --danger: #b91c1c;
+  --amber: #92610a;
+  --green: #166534;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        "Helvetica Neue", Arial, sans-serif;
+}
+
+h1, h2 { font-weight: 600; margin: 0; }
+
+/* ---------- top bar ---------- */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 28px; height: 28px; border-radius: 6px;
+  background: var(--accent);
+  display: inline-block;
+}
+.brand h1 { font-size: 16px; letter-spacing: 0.2px; }
+.brand p { margin: 1px 0 0; font-size: 12px; color: var(--text-dim); }
+
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.identity-label { font-size: 12px; color: var(--text-dim); }
+select, input {
+  font: inherit; color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 9px;
+}
+select:focus, input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+
+.conn-dot {
+  width: 9px; height: 9px; border-radius: 50%;
+  background: #cbd5d1; display: inline-block;
+}
+.conn-dot.ok { background: var(--accent); }
+.conn-dot.err { background: var(--danger); }
+
+/* ---------- tabs ---------- */
+.tabs {
+  display: flex; gap: 2px;
+  padding: 0 24px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+.tab {
+  appearance: none; background: none; border: none;
+  font: inherit; color: var(--text-dim);
+  padding: 11px 14px; cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ---------- layout ---------- */
+main { padding: 20px 24px 8px; }
+.layout {
+  display: grid;
+  grid-template-columns: 330px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.col-forms { display: flex; flex-direction: column; gap: 12px; }
+.col-data  { display: flex; flex-direction: column; gap: 12px; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+/* ---------- cards & forms ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 16px;
+}
+.card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;
+           color: var(--text); margin-bottom: 4px; }
+.hint { margin: 2px 0 8px; font-size: 12px; color: var(--text-dim); }
+.card label {
+  display: block; font-size: 12px; color: var(--text-dim);
+  margin: 8px 0 2px;
+}
+.card input { width: 100%; margin-top: 3px; }
+.card .btn { margin-top: 12px; }
+
+.tag {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--text-dim); border: 1px solid var(--border);
+  border-radius: 4px; padding: 1px 5px; vertical-align: 1px;
+  font-weight: 500;
+}
+
+/* ---------- buttons ---------- */
+.btn {
+  font: inherit; cursor: pointer;
+  border-radius: 6px; padding: 7px 12px;
+  border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+}
+.btn:hover { background: #f1f1ef; }
+.btn-primary {
+  background: var(--accent); border-color: var(--accent); color: #fff;
+}
+.btn-primary:hover { background: var(--accent-hover); }
+.btn-ghost { border-color: transparent; color: var(--text-dim); }
+.btn-ghost:hover { color: var(--text); background: #f1f1ef; }
+.btn-row {
+  font-size: 12px; padding: 3px 8px; margin-left: 4px;
+}
+.btn[disabled] { opacity: 0.55; cursor: default; }
+
+/* ---------- tables ---------- */
+.table-card { padding: 12px 0 4px; }
+.table-card h2 { padding: 0 16px 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 7px 16px; border-top: 1px solid var(--border); }
+th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.4px;
+     color: var(--text-dim); font-weight: 500; border-top: none; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+td .mono, .mono { font-family: var(--mono); font-size: 12px; }
+tbody tr:hover { background: #fbfbfa; }
+.empty { color: var(--text-dim); font-style: italic; padding: 10px 16px; }
+
+/* ---------- status chips ---------- */
+.chip {
+  display: inline-block; font-size: 11px; font-weight: 600;
+  letter-spacing: 0.3px; border-radius: 4px; padding: 2px 7px;
+  background: #f1f1ef; color: var(--text-dim);
+}
+.chip.OPEN, .chip.LISTED { background: var(--accent-soft); color: var(--accent); }
+.chip.IN_PROGRESS, .chip.PENDING_DELIVERY { background: #fdf3e0; color: var(--amber); }
+.chip.SETTLED, .chip.COMPLETED { background: #e7f2e9; color: var(--green); }
+.chip.PARTIALLY_SETTLED { background: #e7f2e9; color: var(--green); outline: 1px dashed #9fc5a8; }
+.chip.DISPUTED { background: #fbe9e9; color: var(--danger); }
+.chip.EXPIRED, .chip.FILLED, .chip.RESOLVED, .chip.CREATED { background: #efefed; color: var(--text-dim); }
+
+/* ---------- activity log ---------- */
+.log-panel {
+  margin: 12px 24px 24px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.log-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 16px 6px;
+}
+.log-head h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px; }
+#log {
+  list-style: none; margin: 0; padding: 0 0 6px;
+  max-height: 180px; overflow-y: auto;
+  font-family: var(--mono); font-size: 12px;
+}
+#log li { padding: 4px 16px; border-top: 1px solid var(--border); }
+#log li.err { color: var(--danger); }
+#log li.ok  { color: var(--text); }
+#log li time { color: var(--text-dim); margin-right: 8px; }

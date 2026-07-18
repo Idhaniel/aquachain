@@ -1,0 +1,8 @@
+node_modules/
+package-lock.json
+ui/data/registry.json
+network/organizations/peerOrganizations/
+network/organizations/ordererOrganizations/
+network/channel-artifacts/
+caliper/identities/
+caliper/reports/

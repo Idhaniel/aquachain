@@ -1,0 +1,70 @@
+# Caliper network configuration for AquaChain (PeerGateway connector).
+# Requires: caliper bind --caliper-bind-sut fabric:2.5
+# Identity files are produced by network/scripts/prepare-caliper-identities.sh
+
+name: AquaChain
+version: '2.0.0'
+
+caliper:
+  blockchain: fabric
+  sutOptions:
+    mutualTls: false
+
+channels:
+  - channelName: energychannel
+    contracts:
+      - id: energy-trading
+  - channelName: producechannel
+    contracts:
+      - id: produce-trading
+
+organizations:
+  # First organization is the default for requests that don't set invokerMspId.
+  - mspid: FishFarmersMSP
+    identities:
+      certificates:
+        - name: 'User1'
+          clientPrivateKey:
+            path: 'identities/fishfarmers-user1.key.pem'
+          clientSignedCert:
+            path: 'identities/fishfarmers-user1.cert.pem'
+        - name: 'User2'
+          clientPrivateKey:
+            path: 'identities/fishfarmers-user2.key.pem'
+          clientSignedCert:
+            path: 'identities/fishfarmers-user2.cert.pem'
+        - name: 'User3'
+          clientPrivateKey:
+            path: 'identities/fishfarmers-user3.key.pem'
+          clientSignedCert:
+            path: 'identities/fishfarmers-user3.cert.pem'
+    peers:
+      - endpoint: localhost:7051
+        tlsCACerts:
+          path: '../network/organizations/peerOrganizations/fishfarmers.aquachain.com/tlsca/tlsca.fishfarmers.aquachain.com-cert.pem'
+
+  - mspid: EnergyProviderMSP
+    identities:
+      certificates:
+        - name: 'User1'
+          clientPrivateKey:
+            path: 'identities/energyprovider-user1.key.pem'
+          clientSignedCert:
+            path: 'identities/energyprovider-user1.cert.pem'
+    peers:
+      - endpoint: localhost:8051
+        tlsCACerts:
+          path: '../network/organizations/peerOrganizations/energyprovider.aquachain.com/tlsca/tlsca.energyprovider.aquachain.com-cert.pem'
+
+  - mspid: FishProcessorsMSP
+    identities:
+      certificates:
+        - name: 'User1'
+          clientPrivateKey:
+            path: 'identities/fishprocessors-user1.key.pem'
+          clientSignedCert:
+            path: 'identities/fishprocessors-user1.cert.pem'
+    peers:
+      - endpoint: localhost:9051
+        tlsCACerts:
+          path: '../network/organizations/peerOrganizations/fishprocessors.aquachain.com/tlsca/tlsca.fishprocessors.aquachain.com-cert.pem'

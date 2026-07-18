@@ -1,0 +1,207 @@
+# AquaChain channel configuration for Hyperledger Fabric v2.5.
+# Two application channels are created directly via the channel
+# participation API (osnadmin) — no system channel (v2.5 recommended flow).
+
+Organizations:
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: ../organizations/ordererOrganizations/aquachain.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+    OrdererEndpoints:
+      - orderer1.aquachain.com:7050
+      - orderer2.aquachain.com:7060
+      - orderer3.aquachain.com:7070
+
+  - &FishFarmers
+    Name: FishFarmersMSP
+    ID: FishFarmersMSP
+    MSPDir: ../organizations/peerOrganizations/fishfarmers.aquachain.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('FishFarmersMSP.admin', 'FishFarmersMSP.peer', 'FishFarmersMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('FishFarmersMSP.admin', 'FishFarmersMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('FishFarmersMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('FishFarmersMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.fishfarmers.aquachain.com
+        Port: 7051
+
+  - &EnergyProvider
+    Name: EnergyProviderMSP
+    ID: EnergyProviderMSP
+    MSPDir: ../organizations/peerOrganizations/energyprovider.aquachain.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('EnergyProviderMSP.admin', 'EnergyProviderMSP.peer', 'EnergyProviderMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('EnergyProviderMSP.admin', 'EnergyProviderMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('EnergyProviderMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('EnergyProviderMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.energyprovider.aquachain.com
+        Port: 8051
+
+  - &FishProcessors
+    Name: FishProcessorsMSP
+    ID: FishProcessorsMSP
+    MSPDir: ../organizations/peerOrganizations/fishprocessors.aquachain.com/msp
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('FishProcessorsMSP.admin', 'FishProcessorsMSP.peer', 'FishProcessorsMSP.client')"
+      Writers:
+        Type: Signature
+        Rule: "OR('FishProcessorsMSP.admin', 'FishProcessorsMSP.client')"
+      Admins:
+        Type: Signature
+        Rule: "OR('FishProcessorsMSP.admin')"
+      Endorsement:
+        Type: Signature
+        Rule: "OR('FishProcessorsMSP.peer')"
+    AnchorPeers:
+      - Host: peer0.fishprocessors.aquachain.com
+        Port: 9051
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+  Orderer: &OrdererCapabilities
+    V2_0: true
+  Application: &ApplicationCapabilities
+    V2_0: true
+
+Application: &ApplicationDefaults
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    LifecycleEndorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+    Endorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+Orderer: &OrdererDefaults
+  OrdererType: etcdraft
+  Addresses:
+    - orderer1.aquachain.com:7050
+    - orderer2.aquachain.com:7060
+    - orderer3.aquachain.com:7070
+  # Batching parameters — a key experimental axis for Caliper runs.
+  BatchTimeout: 2s
+  BatchSize:
+    MaxMessageCount: 500
+    AbsoluteMaxBytes: 10 MB
+    PreferredMaxBytes: 2 MB
+  EtcdRaft:
+    Consenters:
+      - Host: orderer1.aquachain.com
+        Port: 7050
+        ClientTLSCert: ../organizations/ordererOrganizations/aquachain.com/orderers/orderer1.aquachain.com/tls/server.crt
+        ServerTLSCert: ../organizations/ordererOrganizations/aquachain.com/orderers/orderer1.aquachain.com/tls/server.crt
+      - Host: orderer2.aquachain.com
+        Port: 7060
+        ClientTLSCert: ../organizations/ordererOrganizations/aquachain.com/orderers/orderer2.aquachain.com/tls/server.crt
+        ServerTLSCert: ../organizations/ordererOrganizations/aquachain.com/orderers/orderer2.aquachain.com/tls/server.crt
+      - Host: orderer3.aquachain.com
+        Port: 7070
+        ClientTLSCert: ../organizations/ordererOrganizations/aquachain.com/orderers/orderer3.aquachain.com/tls/server.crt
+        ServerTLSCert: ../organizations/ordererOrganizations/aquachain.com/orderers/orderer3.aquachain.com/tls/server.crt
+  Organizations:
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+  Capabilities:
+    <<: *OrdererCapabilities
+
+Channel: &ChannelDefaults
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+  Capabilities:
+    <<: *ChannelCapabilities
+
+Profiles:
+  # energychannel: FishFarmers + EnergyProvider (pricing hidden from FishProcessors)
+  EnergyChannel:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *FishFarmers
+        - *EnergyProvider
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+  # producechannel: FishFarmers + FishProcessors (pricing hidden from EnergyProvider)
+  ProduceChannel:
+    <<: *ChannelDefaults
+    Orderer:
+      <<: *OrdererDefaults
+      Organizations:
+        - *OrdererOrg
+      Capabilities:
+        <<: *OrdererCapabilities
+    Application:
+      <<: *ApplicationDefaults
+      Organizations:
+        - *FishFarmers
+        - *FishProcessors
+      Capabilities:
+        <<: *ApplicationCapabilities

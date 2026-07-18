@@ -1,0 +1,49 @@
+# Crypto material for the AquaChain network (development identities).
+# NOTE: cryptogen is for development/benchmarking. A production or pilot
+# deployment should use Fabric CA per organization (see DESIGN_NOTES.md).
+
+OrdererOrgs:
+  - Name: Orderer
+    Domain: aquachain.com
+    EnableNodeOUs: true
+    Specs:
+      - Hostname: orderer1
+        SANS:
+          - localhost
+      - Hostname: orderer2
+        SANS:
+          - localhost
+      - Hostname: orderer3
+        SANS:
+          - localhost
+
+PeerOrgs:
+  - Name: FishFarmers
+    Domain: fishfarmers.aquachain.com
+    EnableNodeOUs: true
+    Template:
+      Count: 2          # peer0, peer1
+      SANS:
+        - localhost
+    Users:
+      Count: 3          # User1..User3 — farm operator identities (and Caliper clients)
+
+  - Name: EnergyProvider
+    Domain: energyprovider.aquachain.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - localhost
+    Users:
+      Count: 1
+
+  - Name: FishProcessors
+    Domain: fishprocessors.aquachain.com
+    EnableNodeOUs: true
+    Template:
+      Count: 1
+      SANS:
+        - localhost
+    Users:
+      Count: 1

@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AquaChain Console</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark"></span>
+    <div>
+      <h1>AquaChain</h1>
+      <p>Energy &amp; produce trading · Hyperledger Fabric v2.5</p>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <label class="identity-label" for="identity">Acting as</label>
+    <select id="identity"></select>
+    <button id="refresh" class="btn btn-ghost" title="Refresh from ledger">Refresh</button>
+    <span id="conn" class="conn-dot" title="Gateway status"></span>
+  </div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="energy">Energy trading</button>
+  <button class="tab" data-tab="produce">Produce trading</button>
+</nav>
+
+<main>
+
+<!-- ======================= ENERGY ======================= -->
+<section id="tab-energy" class="tab-panel active">
+  <div class="layout">
+    <div class="col-forms">
+
+      <form class="card" data-domain="energy" data-fn="registerFarm">
+        <h2>Register farm</h2>
+        <p class="hint">Binds your current identity to a farm ID on energychannel.</p>
+        <label>Farm ID <input name="farmId" required placeholder="farm-eze"></label>
+        <button class="btn btn-primary">Register</button>
+      </form>
+
+      <form class="card" data-domain="energy" data-fn="depositCredits">
+        <h2>Deposit credits</h2>
+        <p class="hint">Reflects an off-chain bank transfer. Only the <b>Energy cooperative admin</b> identity may call this.</p>
+        <label>Farm ID <input name="farmId" required></label>
+        <label>Amount (kobo) <input name="amount" type="number" min="1" required placeholder="100000"></label>
+        <button class="btn btn-primary">Deposit</button>
+      </form>
+
+      <form class="card" data-domain="energy" data-fn="logEnergyProduction">
+        <h2>Log production</h2>
+        <p class="hint">Simulates the PZEM-004T meter reporting surplus generation.</p>
+        <label>Production ID <input name="productionId" required data-autogen="p"></label>
+        <label>Farm ID <input name="farmId" required></label>
+        <label>Energy (Wh) <input name="wh" type="number" min="1" required placeholder="25200"></label>
+        <button class="btn btn-primary">Log</button>
+      </form>
+
+      <form class="card" data-domain="energy" data-fn="createOffer">
+        <h2>Create offer</h2>
+        <label>Offer ID <input name="offerId" required data-autogen="o"></label>
+        <label>Production ID <input name="productionId" required></label>
+        <label>Quantity (Wh) <input name="quantityWh" type="number" min="1" required placeholder="10000"></label>
+        <label>Price (kobo / kWh) <input name="pricePerKwh" type="number" min="1" required placeholder="150"></label>
+        <button class="btn btn-primary">Create offer</button>
+      </form>
+
+      <form class="card" data-domain="energy" data-fn="acceptOffer" id="form-accept">
+        <h2>Accept offer <span class="tag">buyer</span></h2>
+        <p class="hint">Locks quantity × price in escrow and opens a trade.</p>
+        <label>Trade ID <input name="tradeId" required data-autogen="t"></label>
+        <label>Offer ID <input name="offerId" required></label>
+        <label>Buyer farm ID <input name="buyerFarmId" required></label>
+        <label>Quantity (Wh) <input name="requestedWh" type="number" min="1" required></label>
+        <input type="hidden" name="timeoutSecs" value="">
+        <button class="btn btn-primary">Accept &amp; lock credits</button>
+      </form>
+
+      <form class="card" data-domain="energy" data-fn="confirmDelivery" id="form-confirm">
+        <h2>Confirm delivery <span class="tag">buyer meter</span></h2>
+        <p class="hint">Received &lt; requested settles partially (α ratio); the remainder refunds the buyer.</p>
+        <label>Trade ID <input name="tradeId" required></label>
+        <label>Received (Wh) <input name="receivedWh" type="number" min="0" required></label>
+        <button class="btn btn-primary">Confirm &amp; settle</button>
+      </form>
+
+    </div>
+    <div class="col-data">
+      <div class="card table-card">
+        <h2>Farms &amp; balances</h2>
+        <table id="tbl-energy-farms">
+          <thead><tr><th>Farm</th><th class="num">Available</th><th class="num">Locked</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card table-card">
+        <h2>Production log</h2>
+        <table id="tbl-energy-productions">
+          <thead><tr><th>ID</th><th>Farm</th><th class="num">Total Wh</th><th class="num">Unoffered Wh</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card table-card">
+        <h2>Offers</h2>
+        <table id="tbl-energy-offers">
+          <thead><tr><th>ID</th><th>Seller</th><th class="num">Remaining Wh</th><th class="num">kobo/kWh</th><th>Status</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card table-card">
+        <h2>Trades</h2>
+        <table id="tbl-energy-trades">
+          <thead><tr><th>ID</th><th>Seller → Buyer</th><th class="num">Wh</th><th class="num">Escrow</th><th>Status</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= PRODUCE ======================= -->
+<section id="tab-produce" class="tab-panel">
+  <div class="layout">
+    <div class="col-forms">
+
+      <form class="card" data-domain="produce" data-fn="registerFarm">
+        <h2>Register farm</h2>
+        <p class="hint">Farm identities are per channel — register here too for produce trading.</p>
+        <label>Farm ID <input name="farmId" required></label>
+        <button class="btn btn-primary">Register</button>
+      </form>
+
+      <form class="card" data-domain="produce" data-fn="depositCredits">
+        <h2>Deposit credits</h2>
+        <p class="hint">Only the <b>Processor / arbiter</b> identity may call this.</p>
+        <label>Farm ID <input name="farmId" required></label>
+        <label>Amount (kobo) <input name="amount" type="number" min="1" required placeholder="50000"></label>
+        <button class="btn btn-primary">Deposit</button>
+      </form>
+
+      <form class="card" data-domain="produce" data-fn="updateWaterQuality">
+        <h2>Water quality <span class="tag">IoT</span></h2>
+        <p class="hint">Values ×100 (pH 7.25 → 725). Attached to the farm's next harvest batch.</p>
+        <label>Farm ID <input name="farmId" required></label>
+        <label>pH ×100 <input name="phX100" type="number" min="0" required placeholder="725"></label>
+        <label>Temp °C ×100 <input name="tempCX100" type="number" min="0" required placeholder="2850"></label>
+        <label>DO mg/L ×100 <input name="dissolvedOxygenX100" type="number" min="0" required placeholder="680"></label>
+        <button class="btn btn-primary">Record reading</button>
+      </form>
+
+      <form class="card" data-domain="produce" data-fn="createBatch">
+        <h2>Create batch</h2>
+        <label>Batch ID <input name="batchId" required data-autogen="b"></label>
+        <label>Farm ID <input name="farmId" required></label>
+        <label>Species <input name="species" required placeholder="catfish"></label>
+        <label>Weight (g) <input name="weightGrams" type="number" min="1" required placeholder="120000"></label>
+        <button class="btn btn-primary">Create</button>
+      </form>
+
+      <form class="card" data-domain="produce" data-fn="listBatch" id="form-list">
+        <h2>List for sale</h2>
+        <label>Batch ID <input name="batchId" required></label>
+        <label>Asking price (kobo) <input name="askingPrice" type="number" min="1" required placeholder="30000"></label>
+        <button class="btn btn-primary">List</button>
+      </form>
+
+      <form class="card" data-domain="produce" data-fn="purchaseBatch" id="form-buy">
+        <h2>Purchase batch <span class="tag">buyer</span></h2>
+        <p class="hint">Locks the asking price in escrow until receipt is confirmed.</p>
+        <label>Batch ID <input name="batchId" required></label>
+        <label>Buyer farm ID <input name="buyerFarmId" required></label>
+        <input type="hidden" name="timeoutSecs" value="">
+        <button class="btn btn-primary">Purchase</button>
+      </form>
+
+      <form class="card" data-domain="produce" data-fn="flagDispute" id="form-dispute">
+        <h2>Flag dispute <span class="tag">buyer</span></h2>
+        <label>Batch ID <input name="batchId" required></label>
+        <label>Reason <input name="reason" placeholder="underweight"></label>
+        <button class="btn btn-primary">Flag</button>
+      </form>
+
+      <form class="card" data-domain="produce" data-fn="resolveDispute" id="form-resolve">
+        <h2>Resolve dispute <span class="tag">arbiter</span></h2>
+        <p class="hint">Splits the escrow. Only the <b>Processor / arbiter</b> identity may call this.</p>
+        <label>Batch ID <input name="batchId" required></label>
+        <label>Buyer refund % <input name="buyerRefundPct" type="number" min="0" max="100" required placeholder="40"></label>
+        <button class="btn btn-primary">Resolve</button>
+      </form>
+
+    </div>
+    <div class="col-data">
+      <div class="card table-card">
+        <h2>Farms &amp; balances</h2>
+        <table id="tbl-produce-farms">
+          <thead><tr><th>Farm</th><th class="num">Available</th><th class="num">Locked</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="card table-card">
+        <h2>Batches</h2>
+        <table id="tbl-produce-batches">
+          <thead><tr><th>ID</th><th>Species</th><th>Owner</th><th class="num">Weight g</th><th class="num">Price</th><th>Water @ harvest</th><th>Status</th><th></th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="log-panel">
+  <div class="log-head">
+    <h2>Activity</h2>
+    <button id="clear-log" class="btn btn-ghost">Clear</button>
+  </div>
+  <ul id="log"></ul>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>

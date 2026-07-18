@@ -1,0 +1,81 @@
+# Caliper benchmark — ProduceChannel (produce-trading chaincode)
+#
+# Produce transactions carry heavier payloads than energy ones (embedded
+# water-quality provenance, ownership transfer), which is why the
+# manuscript projects lower TPS on this channel — this config measures it.
+
+test:
+  name: aquachain-produce
+  description: >
+    AquaChain produce trading lifecycle benchmark on Hyperledger Fabric v2.5
+    (3 orgs, 4 peers, 3 Raft orderers, dual-channel topology).
+  workers:
+    number: 4
+  rounds:
+    - label: createBatch
+      description: Harvest batch creation with embedded water-quality metadata at 100 TPS
+      txNumber: 2000
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 100
+      workload:
+        module: workload/produce-create-batch.js
+        arguments:
+          contractId: produce-trading
+          farms: 25
+
+    - label: purchaseBatch
+      description: Escrow lock on batch purchase at 75 TPS
+      txNumber: 1500
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 75
+      workload:
+        module: workload/produce-purchase-batch.js
+        arguments:
+          contractId: produce-trading
+          farms: 50
+          prealloc: 400
+
+    - label: confirmReceipt
+      description: Settlement + ownership transfer at 75 TPS
+      txNumber: 1500
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 75
+      workload:
+        module: workload/produce-confirm-receipt.js
+        arguments:
+          contractId: produce-trading
+          farms: 50
+          prealloc: 400
+
+    - label: getBatch
+      description: Provenance read throughput (evaluate) at 250 TPS
+      txNumber: 5000
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 250
+      workload:
+        module: workload/produce-read-batch.js
+        arguments:
+          contractId: produce-trading
+          farms: 25
+          prealloc: 300
+
+monitors:
+  resource:
+    - module: docker
+      options:
+        interval: 5
+        containers:
+          - orderer1.aquachain.com
+          - orderer2.aquachain.com
+          - orderer3.aquachain.com
+          - peer0.fishfarmers.aquachain.com
+          - peer1.fishfarmers.aquachain.com
+          - peer0.fishprocessors.aquachain.com

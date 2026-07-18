@@ -1,0 +1,103 @@
+# Caliper benchmark — EnergyChannel (energy-trading chaincode)
+#
+# Replaces the manuscript's projected Table 4 with measured results.
+# Rounds mirror the trade lifecycle: production logging -> offer ->
+# escrow lock -> settlement, plus a read round.
+#
+# Tuning axes to explore (edit and re-run):
+#   - rateControl tps (25 / 50 / 100 / 200) to find the saturation point
+#   - workers.number (2 / 4 / 8)
+#   - farms per worker (hot-key contention: fewer farms => more MVCC conflicts)
+#   - CC_POLICY_MODE=AND vs OR at deploy time (endorsement overhead)
+#   - BatchTimeout / MaxMessageCount in configtx.yaml (block cutting)
+
+test:
+  name: aquachain-energy
+  description: >
+    AquaChain energy trading lifecycle benchmark on Hyperledger Fabric v2.5
+    (3 orgs, 4 peers, 3 Raft orderers, dual-channel topology).
+  workers:
+    number: 4
+  rounds:
+    - label: logEnergyProduction
+      description: Production logging (asset creation) at 100 TPS
+      txNumber: 2000
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 100
+      workload:
+        module: workload/energy-log-production.js
+        arguments:
+          contractId: energy-trading
+          farms: 25
+
+    - label: createOffer
+      description: Offer creation (surplus validation + decrement) at 100 TPS
+      txNumber: 2000
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 100
+      workload:
+        module: workload/energy-create-offer.js
+        arguments:
+          contractId: energy-trading
+          farms: 25
+
+    - label: acceptOffer
+      description: Escrow lock (credit hold + offer fill) at 75 TPS
+      txNumber: 1500
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 75
+      workload:
+        module: workload/energy-accept-offer.js
+        arguments:
+          contractId: energy-trading
+          farms: 50
+          prealloc: 400   # >= txNumber / workers, with headroom
+
+    - label: confirmDelivery
+      description: Settlement incl. 30% partial deliveries (alpha ratio) at 75 TPS
+      txNumber: 1500
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 75
+      workload:
+        module: workload/energy-confirm-delivery.js
+        arguments:
+          contractId: energy-trading
+          farms: 50
+          prealloc: 400
+          partialPct: 30
+
+    - label: getTrade
+      description: Read throughput (evaluate) at 250 TPS
+      txNumber: 5000
+      rateControl:
+        type: fixed-rate
+        opts:
+          tps: 250
+      workload:
+        module: workload/energy-query-trade.js
+        arguments:
+          contractId: energy-trading
+          farms: 25
+          prealloc: 300
+
+monitors:
+  resource:
+    - module: docker
+      options:
+        interval: 5
+        containers:
+          - orderer1.aquachain.com
+          - orderer2.aquachain.com
+          - orderer3.aquachain.com
+          - peer0.fishfarmers.aquachain.com
+          - peer1.fishfarmers.aquachain.com
+          - peer0.energyprovider.aquachain.com
+          - peer0.fishprocessors.aquachain.com

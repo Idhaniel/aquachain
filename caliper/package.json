@@ -1,0 +1,16 @@
+{
+  "name": "aquachain-caliper",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Caliper benchmarking workspace for AquaChain (Fabric v2.5)",
+  "scripts": {
+    "bind": "caliper bind --caliper-bind-sut fabric:2.5",
+    "bench:energy": "caliper launch manager --caliper-workspace . --caliper-networkconfig network-config.yaml --caliper-benchconfig benchmarks/energy-benchmark.yaml --caliper-flow-only-test --caliper-report-path reports/energy-report.html",
+    "bench:produce": "caliper launch manager --caliper-workspace . --caliper-networkconfig network-config.yaml --caliper-benchconfig benchmarks/produce-benchmark.yaml --caliper-flow-only-test --caliper-report-path reports/produce-report.html"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.13.1",
+    "@hyperledger/caliper-cli": "0.7.1",
+    "@hyperledger/fabric-gateway": "^1.7.1"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "produce-trading",
+  "version": "1.0.0",
+  "description": "AquaChain produce trading chaincode (Hyperledger Fabric v2.5)",
+  "main": "index.js",
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "fabric-chaincode-node start",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "fabric-contract-api": "~2.5.4",
+    "fabric-shim": "~2.5.4"
+  }
+}
